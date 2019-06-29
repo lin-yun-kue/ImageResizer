@@ -7,6 +7,8 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ImageResizer
 {
@@ -39,27 +41,35 @@ namespace ImageResizer
         /// <param name="sourcePath">圖片來源目錄路徑</param>
         /// <param name="destPath">產生圖片目的目錄路徑</param>
         /// <param name="scale">縮放比例</param>
-        public void ResizeImages(string sourcePath, string destPath, double scale)
+        public async Task ResizeImages(string sourcePath, string destPath, double scale)
         {
             var allFiles = FindImages(sourcePath);
-            allFiles.AsParallel().ForAll(filePath =>
+            List<Task> tasks = new List<Task>();
+            foreach (var filePath in allFiles)
             {
-                Image imgPhoto = Image.FromFile(filePath);
-                string imgName = Path.GetFileNameWithoutExtension(filePath);
+                var tempPath = filePath;
+                var task = Task.Run(async () =>
+               {
+                    //Console.WriteLine($"{tempPath} : {Thread.CurrentThread.ManagedThreadId}");
+                    Image imgPhoto = Image.FromFile(tempPath);
+                   string imgName = Path.GetFileNameWithoutExtension(tempPath);
 
-                int sourceWidth = imgPhoto.Width;
-                int sourceHeight = imgPhoto.Height;
+                   int sourceWidth = imgPhoto.Width;
+                   int sourceHeight = imgPhoto.Height;
 
-                int destionatonWidth = (int)(sourceWidth * scale);
-                int destionatonHeight = (int)(sourceHeight * scale);
+                   int destionatonWidth = (int)(sourceWidth * scale);
+                   int destionatonHeight = (int)(sourceHeight * scale);
 
-                Bitmap processedImage = processBitmap((Bitmap)imgPhoto,
-                    sourceWidth, sourceHeight,
-                    destionatonWidth, destionatonHeight);
-
-                string destFile = Path.Combine(destPath, imgName + ".jpg");
-                processedImage.Save(destFile, ImageFormat.Jpeg);
-            });
+                   var processedImage = processBitmap((Bitmap)imgPhoto,
+                       sourceWidth, sourceHeight,
+                       destionatonWidth, destionatonHeight);
+                    //Console.WriteLine($"{tempPath} : {Thread.CurrentThread.ManagedThreadId}");
+                    string destFile = Path.Combine(destPath, imgName + ".jpg");
+                   processedImage.Save(destFile, ImageFormat.Jpeg);
+               });
+                tasks.Add(task);
+            }
+            await Task.WhenAll(tasks);
             //foreach (var filePath in allFiles)
             //{
             //    Image imgPhoto = Image.FromFile(filePath);
@@ -91,8 +101,6 @@ namespace ImageResizer
             files.AddRange(Directory.GetFiles(srcPath, "*.png", SearchOption.AllDirectories));
             files.AddRange(Directory.GetFiles(srcPath, "*.jpg", SearchOption.AllDirectories));
             files.AddRange(Directory.GetFiles(srcPath, "*.jpeg", SearchOption.AllDirectories));
-            //var result = new ConcurrentBag<string>(files);
-            //return result;
             return files;
         }
 
