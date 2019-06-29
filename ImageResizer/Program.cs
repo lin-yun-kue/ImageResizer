@@ -12,7 +12,7 @@ namespace ImageResizer
         static void Main(string[] args)
         {
             string sourcePath = Path.Combine(Environment.CurrentDirectory, "images");
-            string destinationPath = Path.Combine(Environment.CurrentDirectory, "output"); ;
+            string destinationPath = Path.Combine(Environment.CurrentDirectory, "output");
 
             ImageProcess imageProcess = new ImageProcess();
 
@@ -24,6 +24,7 @@ namespace ImageResizer
             sw.Stop();
 
             Console.WriteLine($"花費時間: {sw.ElapsedMilliseconds} ms");
+            Console.ReadLine();
         }
     }
 }

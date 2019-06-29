@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 
 namespace ImageResizer
 {
@@ -38,7 +42,7 @@ namespace ImageResizer
         public void ResizeImages(string sourcePath, string destPath, double scale)
         {
             var allFiles = FindImages(sourcePath);
-            foreach (var filePath in allFiles)
+            allFiles.AsParallel().ForAll(filePath =>
             {
                 Image imgPhoto = Image.FromFile(filePath);
                 string imgName = Path.GetFileNameWithoutExtension(filePath);
@@ -55,7 +59,25 @@ namespace ImageResizer
 
                 string destFile = Path.Combine(destPath, imgName + ".jpg");
                 processedImage.Save(destFile, ImageFormat.Jpeg);
-            }
+            });
+            //foreach (var filePath in allFiles)
+            //{
+            //    Image imgPhoto = Image.FromFile(filePath);
+            //    string imgName = Path.GetFileNameWithoutExtension(filePath);
+
+            //    int sourceWidth = imgPhoto.Width;
+            //    int sourceHeight = imgPhoto.Height;
+
+            //    int destionatonWidth = (int)(sourceWidth * scale);
+            //    int destionatonHeight = (int)(sourceHeight * scale);
+
+            //    Bitmap processedImage = processBitmap((Bitmap)imgPhoto,
+            //        sourceWidth, sourceHeight,
+            //        destionatonWidth, destionatonHeight);
+
+            //    string destFile = Path.Combine(destPath, imgName + ".jpg");
+            //    processedImage.Save(destFile, ImageFormat.Jpeg);
+            //}
         }
 
         /// <summary>
@@ -69,6 +91,8 @@ namespace ImageResizer
             files.AddRange(Directory.GetFiles(srcPath, "*.png", SearchOption.AllDirectories));
             files.AddRange(Directory.GetFiles(srcPath, "*.jpg", SearchOption.AllDirectories));
             files.AddRange(Directory.GetFiles(srcPath, "*.jpeg", SearchOption.AllDirectories));
+            //var result = new ConcurrentBag<string>(files);
+            //return result;
             return files;
         }
 
