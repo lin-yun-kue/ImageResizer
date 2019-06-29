@@ -27,11 +27,11 @@ namespace ImageResizer
             else
             {
                 var allImageFiles = Directory.GetFiles(destPath, "*", SearchOption.AllDirectories);
-
-                foreach (var item in allImageFiles)
-                {
-                    File.Delete(item);
-                }
+                allImageFiles.AsParallel().ForAll(x => File.Delete(x));
+                //foreach (var item in allImageFiles)
+                //{
+                //    File.Delete(item);
+                //}
             }
         }
 
@@ -51,7 +51,7 @@ namespace ImageResizer
                 var task = Task.Run(async () =>
                {
                     //Console.WriteLine($"{tempPath} : {Thread.CurrentThread.ManagedThreadId}");
-                    Image imgPhoto = Image.FromFile(tempPath);
+                   Image imgPhoto = Image.FromFile(tempPath);
                    string imgName = Path.GetFileNameWithoutExtension(tempPath);
 
                    int sourceWidth = imgPhoto.Width;
