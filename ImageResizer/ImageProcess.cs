@@ -48,7 +48,7 @@ namespace ImageResizer
             foreach (var filePath in allFiles)
             {
                 var tempPath = filePath;
-                var task = Task.Run(async () =>
+                var task = Task.Run( () =>
                {
                     //Console.WriteLine($"{tempPath} : {Thread.CurrentThread.ManagedThreadId}");
                    Image imgPhoto = Image.FromFile(tempPath);
